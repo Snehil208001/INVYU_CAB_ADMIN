@@ -1,10 +1,8 @@
 package com.tride.admin.mainui.adminscreen.viewmodel
 
-import androidx.lifecycle.viewModelScope
 import com.tride.admin.core.base.BaseViewModel
 import com.tride.admin.core.navigations.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,10 +24,8 @@ class AdminViewModel @Inject constructor() : BaseViewModel() {
         navigate(Screen.RideHistoryScreen.route)
     }
 
-    // This helper function now works because _eventFlow is protected
     private fun navigate(route: String) {
-        viewModelScope.launch {
-            _eventFlow.emit(UiEvent.Navigate(route))
-        }
+        // Use sendEvent from BaseViewModel instead of accessing private _eventFlow
+        sendEvent(UiEvent.Navigate(route))
     }
 }

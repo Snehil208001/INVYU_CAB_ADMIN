@@ -7,6 +7,6 @@ sealed class Screen(val route: String) {
     }
     object AdminScreen : Screen("admin_screen")
     object ManageDriversScreen : Screen("manage_drivers_screen")
-    object ManageRidersScreen : Screen("manage_riders_screen") // Optional: For User Base
-    object RideHistoryScreen : Screen("ride_history_screen")   // New: For Ride History
+    object ManageRidersScreen : Screen("manage_riders_screen")
+    object RideHistoryScreen : Screen("ride_history_screen")
 }
