@@ -1,6 +1,5 @@
 package com.tride.admin.mainui.managedriversscreen.ui
 
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,12 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tride.admin.core.base.BaseViewModel
+import com.tride.admin.core.navigations.Screen
 import com.tride.admin.mainui.managedriversscreen.viewmodel.DriverUiModel
 import com.tride.admin.mainui.managedriversscreen.viewmodel.ManageDriversViewModel
 import com.tride.admin.ui.theme.CabMintGreen
@@ -43,6 +38,7 @@ fun ManageDriversScreen(
 ) {
     val drivers = viewModel.filteredDrivers.value
     val selectedFilter = viewModel.selectedFilter.value
+    val searchQuery = viewModel.searchQuery.value // ✅ Get Search State
     val isLoading = viewModel.isLoading.value
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -51,6 +47,9 @@ fun ManageDriversScreen(
             when (event) {
                 is BaseViewModel.UiEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(event.message)
+                }
+                is BaseViewModel.UiEvent.NavigateBack -> {
+                    navController.popBackStack()
                 }
                 else -> {}
             }
@@ -80,11 +79,31 @@ fun ManageDriversScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            // ✅ NEW: Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChange(it) },
+                placeholder = { Text("Search by Name or Phone") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = CabMintGreen,
+                    focusedLabelColor = CabMintGreen,
+                    cursorColor = CabMintGreen,
+                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = Color.White
+                ),
+                singleLine = true
+            )
+
             // Filter Chips
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp), // Adjusted padding
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val filters = listOf("All", "Active", "Pending", "Blocked")
@@ -107,14 +126,17 @@ fun ManageDriversScreen(
                 }
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(bottom = 16.dp, start = 16.dp, end = 16.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp, start = 16.dp, end = 16.dp, top = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(drivers) { driver ->
                         DriverItemCard(
                             driver = driver,
                             onApprove = { viewModel.onApproveClicked(driver) },
-                            onBlock = { viewModel.onBlockClicked(driver) }
+                            onBlock = { viewModel.onBlockClicked(driver) },
+                            onClick = {
+                                navController.navigate(Screen.DriverDetailScreen.createRoute(driver.id.toString()))
+                            }
                         )
                     }
                 }
@@ -127,16 +149,17 @@ fun ManageDriversScreen(
 fun DriverItemCard(
     driver: DriverUiModel,
     onApprove: () -> Unit,
-    onBlock: () -> Unit
+    onBlock: () -> Unit,
+    onClick: () -> Unit
 ) {
     Card(
+        onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Profile Placeholder
                 Box(
                     modifier = Modifier
                         .size(50.dp)
@@ -162,7 +185,6 @@ fun DriverItemCard(
             HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Info Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -185,7 +207,6 @@ fun DriverItemCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Action Buttons
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (driver.status == "Pending") {
                     Button(

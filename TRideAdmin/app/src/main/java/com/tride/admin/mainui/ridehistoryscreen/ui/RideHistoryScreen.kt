@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -20,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.tride.admin.core.navigations.Screen
 import com.tride.admin.mainui.ridehistoryscreen.viewmodel.RideHistoryViewModel
 import com.tride.admin.mainui.ridehistoryscreen.viewmodel.RideUiModel
 import com.tride.admin.ui.theme.CabMintGreen
@@ -52,15 +52,24 @@ fun RideHistoryScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(rides) { ride ->
-                RideHistoryItem(ride)
+                RideHistoryItem(
+                    ride = ride,
+                    onClick = {
+                        navController.navigate(Screen.RideDetailScreen.createRoute(ride.id))
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun RideHistoryItem(ride: RideUiModel) {
+fun RideHistoryItem(
+    ride: RideUiModel,
+    onClick: () -> Unit
+) {
     Card(
+        onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         shape = RoundedCornerShape(12.dp)

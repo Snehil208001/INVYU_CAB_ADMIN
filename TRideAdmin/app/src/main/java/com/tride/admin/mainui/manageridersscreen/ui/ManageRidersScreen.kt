@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tride.admin.core.base.BaseViewModel
+import com.tride.admin.core.navigations.Screen
 import com.tride.admin.mainui.manageridersscreen.viewmodel.ManageRidersViewModel
 import com.tride.admin.mainui.manageridersscreen.viewmodel.RiderUiModel
 import com.tride.admin.ui.theme.CabMintGreen
@@ -74,7 +75,11 @@ fun ManageRidersScreen(
             items(riders) { rider ->
                 RiderItemCard(
                     rider = rider,
-                    onAction = { viewModel.onBlockUnblockClicked(rider) }
+                    onAction = { viewModel.onBlockUnblockClicked(rider) },
+                    // ADDED: Navigation on click
+                    onClick = {
+                        navController.navigate(Screen.RiderDetailScreen.createRoute(rider.id))
+                    }
                 )
             }
         }
@@ -84,9 +89,11 @@ fun ManageRidersScreen(
 @Composable
 fun RiderItemCard(
     rider: RiderUiModel,
-    onAction: () -> Unit
+    onAction: () -> Unit,
+    onClick: () -> Unit // ADDED
 ) {
     Card(
+        onClick = onClick, // ADDED
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
@@ -119,6 +126,7 @@ fun RiderItemCard(
                 }
             }
 
+            // Note: IconButton intercepts click, so clicking the button won't trigger the Card's onClick
             IconButton(onClick = onAction) {
                 if (rider.status == "Active") {
                     Icon(Icons.Default.Block, contentDescription = "Block", tint = Color.Red.copy(alpha = 0.6f))

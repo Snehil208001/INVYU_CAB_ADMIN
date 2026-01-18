@@ -38,28 +38,29 @@ fun AdminScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // --- Events ---
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
             when (event) {
                 is BaseViewModel.UiEvent.Navigate -> {
                     navController.navigate(event.route) {
-                        // If going back to auth, clear stack
                         if (event.route.contains("auth")) popUpTo(0)
                     }
                 }
                 is BaseViewModel.UiEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(event.message, duration = SnackbarDuration.Short)
                 }
+                // ✅ ADDED THIS BRANCH TO FIX THE ERROR
+                is BaseViewModel.UiEvent.NavigateBack -> {
+                    navController.popBackStack()
+                }
             }
         }
     }
 
     Scaffold(
-        containerColor = Color(0xFFF8F9FA), // Professional Off-White
+        containerColor = Color(0xFFF8F9FA),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            // Header with System Padding
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -82,9 +83,8 @@ fun AdminScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
-                // Notification & Logout
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { /* TODO: Notifications */ }) {
+                    IconButton(onClick = { viewModel.onNotificationsClicked() }) {
                         Icon(Icons.Outlined.Notifications, contentDescription = "Alerts", tint = Color.White)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -107,10 +107,8 @@ fun AdminScreen(
                 .padding(padding),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            // item 1: Floating Stats Layer
             item {
                 Box(modifier = Modifier.fillMaxWidth().height(140.dp)) {
-                    // Green Extension Background
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -123,7 +121,6 @@ fun AdminScreen(
                             )
                     )
 
-                    // Floating Cards Row
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -135,27 +132,29 @@ fun AdminScreen(
                             label = "Drivers",
                             value = "124",
                             icon = Icons.Default.DirectionsCar,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            onClick = { viewModel.onManageDriversClicked() }
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         StatCard(
                             label = "Users",
                             value = "8.2k",
                             icon = Icons.Default.Person,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            onClick = { viewModel.onManageRidersClicked() }
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         StatCard(
                             label = "Rev.",
                             value = "₹12k",
                             icon = Icons.Default.TrendingUp,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            onClick = { viewModel.onRevenueClicked() }
                         )
                     }
                 }
             }
 
-            // item 2: Quick Actions Title
             item {
                 Text(
                     text = "Quick Actions",
@@ -166,7 +165,6 @@ fun AdminScreen(
                 )
             }
 
-            // item 3: Action Grid
             item {
                 Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -203,13 +201,12 @@ fun AdminScreen(
                             icon = Icons.Default.Settings,
                             color = Color.Gray,
                             modifier = Modifier.weight(1f),
-                            onClick = { /* Future */ }
+                            onClick = { viewModel.onSettingsClicked() }
                         )
                     }
                 }
             }
 
-            // item 4: Recent Activity Title
             item {
                 Row(
                     modifier = Modifier
@@ -234,7 +231,6 @@ fun AdminScreen(
                 }
             }
 
-            // item 5: Mock Activity List
             items(5) { index ->
                 ActivityItem(index)
             }
@@ -242,18 +238,16 @@ fun AdminScreen(
     }
 }
 
-// ------------------------------------
-// UI COMPONENTS
-// ------------------------------------
-
 @Composable
 fun StatCard(
     label: String,
     value: String,
     icon: ImageVector,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     Card(
+        onClick = onClick,
         modifier = modifier
             .height(100.dp)
             .shadow(elevation = 6.dp, shape = RoundedCornerShape(16.dp), spotColor = CabMintGreen.copy(alpha = 0.2f)),
@@ -304,7 +298,6 @@ fun ActionCardBig(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Background Circle Decoration
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -357,7 +350,6 @@ fun ActivityItem(index: Int) {
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon Box
         Box(
             modifier = Modifier
                 .size(40.dp)

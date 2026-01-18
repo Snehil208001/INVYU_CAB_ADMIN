@@ -49,6 +49,9 @@ fun OtpScreen(
                 is BaseViewModel.UiEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(event.message)
                 }
+                is BaseViewModel.UiEvent.NavigateBack -> {
+                    navController.popBackStack()
+                }
             }
         }
     }

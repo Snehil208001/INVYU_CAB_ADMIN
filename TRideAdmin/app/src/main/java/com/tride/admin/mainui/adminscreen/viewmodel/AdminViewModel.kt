@@ -24,8 +24,20 @@ class AdminViewModel @Inject constructor() : BaseViewModel() {
         navigate(Screen.RideHistoryScreen.route)
     }
 
+    fun onSettingsClicked() {
+        navigate(Screen.SettingScreen.route)
+    }
+
+    fun onNotificationsClicked() {
+        navigate(Screen.NotificationScreen.route)
+    }
+
+    // ADDED THIS FUNCTION
+    fun onRevenueClicked() {
+        navigate(Screen.EarningsScreen.route)
+    }
+
     private fun navigate(route: String) {
-        // Use sendEvent from BaseViewModel instead of accessing private _eventFlow
         sendEvent(UiEvent.Navigate(route))
     }
 }

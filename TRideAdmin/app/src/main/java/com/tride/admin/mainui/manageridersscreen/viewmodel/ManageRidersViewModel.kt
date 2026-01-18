@@ -43,7 +43,6 @@ class ManageRidersViewModel @Inject constructor() : ViewModel() {
     }
 
     fun onBlockUnblockClicked(rider: RiderUiModel) {
-        // Toggle logic for UI demo
         val updatedList = _riders.value.map {
             if (it.id == rider.id) {
                 it.copy(status = if (it.status == "Active") "Blocked" else "Active")
