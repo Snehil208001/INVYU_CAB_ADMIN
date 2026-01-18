@@ -10,6 +10,8 @@ import com.tride.admin.mainui.adminscreen.ui.AdminScreen
 import com.tride.admin.mainui.authscreen.ui.AuthScreen
 import com.tride.admin.mainui.managedriversscreen.ui.ManageDriversScreen
 import com.tride.admin.mainui.otpscreen.ui.OtpScreen
+// Import the new screen
+import com.tride.admin.mainui.ridehistoryscreen.ui.RideHistoryScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -39,6 +41,11 @@ fun NavGraph(navController: NavHostController) {
         // 4. Manage Drivers
         composable(route = Screen.ManageDriversScreen.route) {
             ManageDriversScreen(navController = navController)
+        }
+
+        // 5. Ride History (NEW)
+        composable(route = Screen.RideHistoryScreen.route) {
+            RideHistoryScreen(navController = navController)
         }
     }
 }

@@ -1,30 +1,35 @@
 package com.tride.admin.mainui.adminscreen.viewmodel
 
+import androidx.lifecycle.viewModelScope
 import com.tride.admin.core.base.BaseViewModel
 import com.tride.admin.core.navigations.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AdminViewModel @Inject constructor() : BaseViewModel() {
 
-    // Manage Drivers
-    fun onManageDriversClicked() {
-        sendEvent(UiEvent.Navigate(Screen.ManageDriversScreen.route))
-    }
-
-    // Manage Riders
-    fun onManageRidersClicked() {
-        sendEvent(UiEvent.ShowSnackbar("Manage Riders feature coming soon!"))
-    }
-
-    // View Rides
-    fun onViewRidesClicked() {
-        sendEvent(UiEvent.ShowSnackbar("View Rides feature coming soon!"))
-    }
-
-    // Logout
     fun onLogoutClicked() {
-        sendEvent(UiEvent.Navigate(Screen.AuthScreen.route))
+        navigate(Screen.AuthScreen.route)
+    }
+
+    fun onManageDriversClicked() {
+        navigate(Screen.ManageDriversScreen.route)
+    }
+
+    fun onManageRidersClicked() {
+        navigate(Screen.ManageRidersScreen.route)
+    }
+
+    fun onViewRidesClicked() {
+        navigate(Screen.RideHistoryScreen.route)
+    }
+
+    // This helper function now works because _eventFlow is protected
+    private fun navigate(route: String) {
+        viewModelScope.launch {
+            _eventFlow.emit(UiEvent.Navigate(route))
+        }
     }
 }
