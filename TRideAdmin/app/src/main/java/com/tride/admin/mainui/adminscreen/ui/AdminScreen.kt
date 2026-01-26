@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -37,6 +39,7 @@ fun AdminScreen(
     viewModel: AdminViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val dashboardState = viewModel.dashboardState.value // Observe State
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
@@ -49,7 +52,6 @@ fun AdminScreen(
                 is BaseViewModel.UiEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(event.message, duration = SnackbarDuration.Short)
                 }
-                // ✅ ADDED THIS BRANCH TO FIX THE ERROR
                 is BaseViewModel.UiEvent.NavigateBack -> {
                     navController.popBackStack()
                 }
@@ -101,138 +103,146 @@ fun AdminScreen(
             }
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(bottom = 24.dp)
+        // PullToRefreshBox wraps the scrollable content
+        PullToRefreshBox(
+            isRefreshing = dashboardState.isRefreshing,
+            onRefresh = { viewModel.onRefresh() },
+            modifier = Modifier.padding(padding)
         ) {
-            item {
-                Box(modifier = Modifier.fillMaxWidth().height(140.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(CabMintGreen, CabMintGreen)
-                                ),
-                                shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
-                            )
-                    )
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().height(140.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(CabMintGreen, CabMintGreen)
+                                    ),
+                                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                                )
+                        )
 
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomCenter)
+                                .padding(horizontal = 24.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            StatCard(
+                                label = "Drivers",
+                                value = dashboardState.driverCount,
+                                icon = Icons.Default.DirectionsCar,
+                                modifier = Modifier.weight(1f),
+                                onClick = { viewModel.onManageDriversClicked() },
+                                isLoading = dashboardState.isLoading
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            StatCard(
+                                label = "Users",
+                                value = dashboardState.userCount,
+                                icon = Icons.Default.Person,
+                                modifier = Modifier.weight(1f),
+                                onClick = { viewModel.onManageRidersClicked() },
+                                isLoading = dashboardState.isLoading
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            StatCard(
+                                label = "Rev.",
+                                value = dashboardState.totalRevenue,
+                                icon = Icons.Default.TrendingUp,
+                                modifier = Modifier.weight(1f),
+                                onClick = { viewModel.onRevenueClicked() },
+                                isLoading = dashboardState.isLoading
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Text(
+                        text = "Quick Actions",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 12.dp)
+                    )
+                }
+
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            ActionCardBig(
+                                title = "Manage Fleet",
+                                subtitle = "Drivers & Cars",
+                                icon = Icons.Default.LocalTaxi,
+                                color = CabMintGreen,
+                                modifier = Modifier.weight(1f),
+                                onClick = { viewModel.onManageDriversClicked() }
+                            )
+                            ActionCardBig(
+                                title = "User Base",
+                                subtitle = "Riders & Profiles",
+                                icon = Icons.Default.Group,
+                                color = Color(0xFF5EBA7D),
+                                modifier = Modifier.weight(1f),
+                                onClick = { viewModel.onManageRidersClicked() }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            ActionCardBig(
+                                title = "Ride History",
+                                subtitle = "Track Trips",
+                                icon = Icons.Default.History,
+                                color = Color(0xFF4CA6A6),
+                                modifier = Modifier.weight(1f),
+                                onClick = { viewModel.onViewRidesClicked() }
+                            )
+                            ActionCardBig(
+                                title = "Settings",
+                                subtitle = "App Config",
+                                icon = Icons.Default.Settings,
+                                color = Color.Gray,
+                                modifier = Modifier.weight(1f),
+                                onClick = { viewModel.onSettingsClicked() }
+                            )
+                        }
+                    }
+                }
+
+                item {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                            .padding(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        StatCard(
-                            label = "Drivers",
-                            value = "124",
-                            icon = Icons.Default.DirectionsCar,
-                            modifier = Modifier.weight(1f),
-                            onClick = { viewModel.onManageDriversClicked() }
+                        Text(
+                            text = "Recent Activity",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        StatCard(
-                            label = "Users",
-                            value = "8.2k",
-                            icon = Icons.Default.Person,
-                            modifier = Modifier.weight(1f),
-                            onClick = { viewModel.onManageRidersClicked() }
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        StatCard(
-                            label = "Rev.",
-                            value = "₹12k",
-                            icon = Icons.Default.TrendingUp,
-                            modifier = Modifier.weight(1f),
-                            onClick = { viewModel.onRevenueClicked() }
-                        )
-                    }
-                }
-            }
-
-            item {
-                Text(
-                    text = "Quick Actions",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 12.dp)
-                )
-            }
-
-            item {
-                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        ActionCardBig(
-                            title = "Manage Fleet",
-                            subtitle = "Drivers & Cars",
-                            icon = Icons.Default.LocalTaxi,
+                        Text(
+                            text = "View All",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
                             color = CabMintGreen,
-                            modifier = Modifier.weight(1f),
-                            onClick = { viewModel.onManageDriversClicked() }
-                        )
-                        ActionCardBig(
-                            title = "User Base",
-                            subtitle = "Riders & Profiles",
-                            icon = Icons.Default.Group,
-                            color = Color(0xFF5EBA7D),
-                            modifier = Modifier.weight(1f),
-                            onClick = { viewModel.onManageRidersClicked() }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        ActionCardBig(
-                            title = "Ride History",
-                            subtitle = "Track Trips",
-                            icon = Icons.Default.History,
-                            color = Color(0xFF4CA6A6),
-                            modifier = Modifier.weight(1f),
-                            onClick = { viewModel.onViewRidesClicked() }
-                        )
-                        ActionCardBig(
-                            title = "Settings",
-                            subtitle = "App Config",
-                            icon = Icons.Default.Settings,
-                            color = Color.Gray,
-                            modifier = Modifier.weight(1f),
-                            onClick = { viewModel.onSettingsClicked() }
+                            modifier = Modifier.clickable { /* TODO */ }
                         )
                     }
                 }
-            }
 
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Recent Activity",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                    Text(
-                        text = "View All",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = CabMintGreen,
-                        modifier = Modifier.clickable { /* TODO */ }
-                    )
+                items(5) { index ->
+                    ActivityItem(index)
                 }
-            }
-
-            items(5) { index ->
-                ActivityItem(index)
             }
         }
     }
@@ -244,7 +254,8 @@ fun StatCard(
     value: String,
     icon: ImageVector,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    isLoading: Boolean = false
 ) {
     Card(
         onClick = onClick,
@@ -266,12 +277,22 @@ fun StatCard(
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 18.sp,
-                color = Color.Black
-            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = CabMintGreen
+                )
+            } else {
+                Text(
+                    text = value,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 15.sp,
+                    color = Color.Black,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
             Text(
                 text = label,
                 fontSize = 12.sp,

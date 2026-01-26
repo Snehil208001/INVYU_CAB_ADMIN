@@ -1,5 +1,6 @@
 package com.tride.admin.mainui.manageridersscreen.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -68,7 +69,9 @@ fun ManageRidersScreen(
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.padding(padding).fillMaxSize(),
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -76,7 +79,6 @@ fun ManageRidersScreen(
                 RiderItemCard(
                     rider = rider,
                     onAction = { viewModel.onBlockUnblockClicked(rider) },
-                    // ADDED: Navigation on click
                     onClick = {
                         navController.navigate(Screen.RiderDetailScreen.createRoute(rider.id))
                     }
@@ -90,10 +92,10 @@ fun ManageRidersScreen(
 fun RiderItemCard(
     rider: RiderUiModel,
     onAction: () -> Unit,
-    onClick: () -> Unit // ADDED
+    onClick: () -> Unit
 ) {
     Card(
-        onClick = onClick, // ADDED
+        onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
@@ -121,17 +123,50 @@ fun RiderItemCard(
                 Text(text = rider.phone, fontSize = 13.sp, color = Color.Gray)
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(14.dp))
-                    Text(text = "${rider.rating} • ${rider.ridesTaken} Rides", fontSize = 12.sp, color = Color.Gray)
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = "${rider.rating} • ${rider.ridesTaken} Rides",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
                 }
             }
 
-            // Note: IconButton intercepts click, so clicking the button won't trigger the Card's onClick
-            IconButton(onClick = onAction) {
-                if (rider.status == "Active") {
-                    Icon(Icons.Default.Block, contentDescription = "Block", tint = Color.Red.copy(alpha = 0.6f))
-                } else {
-                    Icon(Icons.Default.CheckCircle, contentDescription = "Activate", tint = CabMintGreen)
+            // --- REDESIGNED STATUS BUTTON ---
+            val isActive = rider.status == "Active"
+            val statusColor = if (isActive) CabMintGreen else Color(0xFFE53935)
+            val statusText = if (isActive) "Active" else "Blocked"
+            val statusIcon = if (isActive) Icons.Default.CheckCircle else Icons.Default.Block
+            val bgColor = if (isActive) CabMintGreen.copy(alpha = 0.1f) else Color(0xFFFFEBEE)
+
+            Surface(
+                onClick = onAction,
+                shape = RoundedCornerShape(8.dp),
+                color = bgColor,
+                border = BorderStroke(1.dp, statusColor.copy(alpha = 0.5f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = statusIcon,
+                        contentDescription = null,
+                        tint = statusColor,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = statusText,
+                        color = statusColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
