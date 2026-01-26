@@ -2,9 +2,8 @@ package com.tride.admin.core.navigations
 
 sealed class Screen(val route: String) {
     object AuthScreen : Screen("auth_screen")
-    object OtpScreen : Screen("otp_screen/{mobileNumber}") {
-        fun createRoute(mobileNumber: String) = "otp_screen/$mobileNumber"
-    }
+    // OtpScreen removed as per request
+
     object AdminScreen : Screen("admin_screen")
     object ManageDriversScreen : Screen("manage_drivers_screen")
     object ManageRidersScreen : Screen("manage_riders_screen")
@@ -21,7 +20,5 @@ sealed class Screen(val route: String) {
     }
     object NotificationScreen : Screen("notification_screen")
     object EarningsScreen : Screen("earnings_screen")
-
-    // ADDED THIS
     object EditProfileScreen : Screen("edit_profile_screen")
 }

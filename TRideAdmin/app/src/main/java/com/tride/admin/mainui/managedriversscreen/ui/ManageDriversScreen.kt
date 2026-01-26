@@ -241,6 +241,7 @@ fun DriverItemCard(
 fun StatusBadge(status: String) {
     val (color, bgColor) = when (status) {
         "Active" -> Color(0xFF2E7D32) to Color(0xFFE8F5E9)
+
         "Pending" -> Color(0xFFEF6C00) to Color(0xFFFFF3E0)
         "Blocked" -> Color(0xFFC62828) to Color(0xFFFFEBEE)
         else -> Color.Gray to Color.LightGray

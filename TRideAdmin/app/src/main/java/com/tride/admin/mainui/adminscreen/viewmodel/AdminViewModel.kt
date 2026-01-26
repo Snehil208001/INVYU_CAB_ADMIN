@@ -1,15 +1,27 @@
 package com.tride.admin.mainui.adminscreen.viewmodel
 
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.tride.admin.core.base.BaseViewModel
 import com.tride.admin.core.navigations.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AdminViewModel @Inject constructor() : BaseViewModel() {
 
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+
+
     fun onLogoutClicked() {
-        navigate(Screen.AuthScreen.route)
+        viewModelScope.launch {
+            // 1. Sign out from Firebase
+            auth.signOut()
+
+            // 2. Navigate back to Auth Screen
+            sendEvent(UiEvent.Navigate(Screen.AuthScreen.route))
+        }
     }
 
     fun onManageDriversClicked() {
